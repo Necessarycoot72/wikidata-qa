@@ -8,6 +8,7 @@ function nonAdminQIDs() {
         'Q131463097', // former municipality
         'Q931483', // legal fiction
         'Q856564', // library association
+        'Q1550680' // unorganized territory
     ];
 }
 
