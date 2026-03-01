@@ -7,9 +7,9 @@ Link: https://zelonewolf.github.io/wikidata-qa
 
 ## Useful links
 
-- [2024 Census Bureau Gazetteer](https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer)
+- [2025 Census Bureau Gazetteer](https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer)
 - [Census bureau magic decoder ring](https://www.census.gov/library/reference/code-lists/ansi.html)
-- [2024 TIGER/Line® Shapefiles: Places](https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2024&layergroup=Places)
+- [2025 TIGER/Line® Shapefiles: Places](https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2024&layergroup=Places)
 
 ## Downloading boundary and place node data for a state
 
