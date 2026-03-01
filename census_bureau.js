@@ -98,7 +98,7 @@ async function getCensusBoundaries(state) {
   const places = createEmptyPlaces();
   
   // Fetch places data
-  const placesUrl = `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_gaz_place_${state.fipsCode}.txt`;
+  const placesUrl = `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2025_Gazetteer/2025_gaz_place_${state.fipsCode}.txt`;
   const placesRows = await fetchCensusData(placesUrl);
   
   if (placesRows.length) {
@@ -119,7 +119,7 @@ async function getCensusBoundaries(state) {
     });
   }
   // Fetch county divisions data
-  const divisionsUrl = `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_gaz_cousubs_${state.fipsCode}.txt`;
+  const divisionsUrl = `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2025_Gazetteer/2025_gaz_cousubs_${state.fipsCode}.txt`;
   const divisionRows = await fetchCensusData(divisionsUrl);
 
   if (divisionRows.length) {
