@@ -1,60 +1,60 @@
 const axios = require('axios');
 
 const stateFipsCodes = {
-    'Alabama': '01',
-    'Alaska': '02',
-    'Arizona': '04',
-    'Arkansas': '05',
-    'California': '06',
-    'Colorado': '08',
-    'Connecticut': '09',
-    'Delaware': '10',
-    'Florida': '12',
-    'Georgia': '13',
-    'Hawaii': '15',
-    'Idaho': '16',
-    'Illinois': '17',
-    'Indiana': '18',
-    'Iowa': '19',
-    'Kansas': '20',
-    'Kentucky': '21',
-    'Louisiana': '22',
-    'Maine': '23',
-    'Maryland': '24',
-    'Massachusetts': '25',
-    'Michigan': '26',
-    'Minnesota': '27',
-    'Mississippi': '28',
-    'Missouri': '29',
-    'Montana': '30',
-    'Nebraska': '31',
-    'Nevada': '32',
-    'New Hampshire': '33',
-    'New Jersey': '34',
-    'New Mexico': '35',
-    'New York': '36',
-    'North Carolina': '37',
-    'North Dakota': '38',
-    'Ohio': '39',
-    'Oklahoma': '40',
-    'Oregon': '41',
-    'Pennsylvania': '42',
-    'Rhode Island': '44',
-    'South Carolina': '45',
-    'South Dakota': '46',
-    'Tennessee': '47',
-    'Texas': '48',
-    'Utah': '49',
-    'Vermont': '50',
-    'Virginia': '51',
-    'Washington': '53',
-    'West Virginia': '54',
-    'Wisconsin': '55',
-    'Wyoming': '56'
+  'Alabama': '01',
+  'Alaska': '02',
+  'Arizona': '04',
+  'Arkansas': '05',
+  'California': '06',
+  'Colorado': '08',
+  'Connecticut': '09',
+  'Delaware': '10',
+  'Florida': '12',
+  'Georgia': '13',
+  'Hawaii': '15',
+  'Idaho': '16',
+  'Illinois': '17',
+  'Indiana': '18',
+  'Iowa': '19',
+  'Kansas': '20',
+  'Kentucky': '21',
+  'Louisiana': '22',
+  'Maine': '23',
+  'Maryland': '24',
+  'Massachusetts': '25',
+  'Michigan': '26',
+  'Minnesota': '27',
+  'Mississippi': '28',
+  'Missouri': '29',
+  'Montana': '30',
+  'Nebraska': '31',
+  'Nevada': '32',
+  'New Hampshire': '33',
+  'New Jersey': '34',
+  'New Mexico': '35',
+  'New York': '36',
+  'North Carolina': '37',
+  'North Dakota': '38',
+  'Ohio': '39',
+  'Oklahoma': '40',
+  'Oregon': '41',
+  'Pennsylvania': '42',
+  'Rhode Island': '44',
+  'South Carolina': '45',
+  'South Dakota': '46',
+  'Tennessee': '47',
+  'Texas': '48',
+  'Utah': '49',
+  'Vermont': '50',
+  'Virginia': '51',
+  'Washington': '53',
+  'West Virginia': '54',
+  'Wisconsin': '55',
+  'Wyoming': '56'
 };
 
 function getStateFipsCode(stateName) {
-    return stateFipsCodes[stateName] || 'Unknown';
+  return stateFipsCodes[stateName] || 'Unknown';
 }
 
 const lsadTypes = {
@@ -82,12 +82,26 @@ function createEmptyPlaces() {
 }
 
 // Helper function to fetch and parse census data
+// Auto-detects delimiter (pipe for 2025+, tab for 2024 and earlier)
 async function fetchCensusData(url) {
   try {
     const response = await axios.get(url);
-    return response.data.split('\n')
-                      .map(line => line.split('\t'))
-                      .slice(1); // Skip header row
+    const lines = response.data.split('\n').filter(line => line.trim());
+    if (lines.length === 0) return [];
+
+    // Auto-detect delimiter from header line
+    const headerLine = lines[0];
+    const delimiter = headerLine.includes('|') ? '|' : '\t';
+    const headers = headerLine.split(delimiter).map(h => h.trim());
+
+    return lines.slice(1).map(line => {
+      const values = line.split(delimiter).map(v => v.trim());
+      const obj = {};
+      headers.forEach((header, i) => {
+        obj[header] = values[i] || '';
+      });
+      return obj;
+    });
   } catch (error) {
     console.error('Error fetching data:', error);
     return [];
@@ -96,18 +110,18 @@ async function fetchCensusData(url) {
 
 async function getCensusBoundaries(state) {
   const places = createEmptyPlaces();
-  
+
   // Fetch places data
   const placesUrl = `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2025_Gazetteer/2025_gaz_place_${state.fipsCode}.txt`;
   const placesRows = await fetchCensusData(placesUrl);
-  
+
   if (placesRows.length) {
     placesRows.forEach(row => {
-      if (!row[3] || !row[4] || !row[5]) return;
-      
-      const name = row[3];
-      const lsadType = row[4];
-      const funcstat = row[5];
+      if (!row.NAME || !row.LSAD || !row.FUNCSTAT) return;
+
+      const name = row.NAME;
+      const lsadType = row.LSAD;
+      const funcstat = row.FUNCSTAT;
 
       if (lsadTypes[lsadType] && (funcstat === 'A' || funcstat === 'S')) {
         const placeType = lsadTypes[lsadType];
@@ -124,24 +138,24 @@ async function getCensusBoundaries(state) {
 
   if (divisionRows.length) {
     divisionRows.forEach(row => {
-      if (!row[3] || !row[4]) return;
-      
-      const name = row[3];
-      const funcstat = row[4];
+      if (!row.NAME || !row.FUNCSTAT) return;
+
+      const name = row.NAME;
+      const funcstat = row.FUNCSTAT;
 
       if (funcstat === 'A') {
         const match = name.match(/^(.+?)\s+([A-Za-z]+)$/);
         if (match) {
           const placeName = match[1];
           const lsad = match[2].toLowerCase();
-          
+
           const placeTypeMap = {
             'city': 'cities',
-            'town': 'towns', 
+            'town': 'towns',
             'village': 'villages',
             'cdp': 'cdps'
           };
-          
+
           if (placeTypeMap[lsad] && !places[placeTypeMap[lsad]].includes(placeName)) {
             places[placeTypeMap[lsad]].push(placeName);
           }
